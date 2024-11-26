@@ -1,0 +1,57 @@
+import requests
+from random import random
+
+API = '7202336450:AAHDhqjwNGOCLKJ21tJ0L1st3ZgDXldwCx8'
+CHAT_ID = '-1002202582670'
+BASE_URL = f'https://api.telegram.org/bot{API}/'
+
+BANNED_WORDS = {'хуй'}
+
+def check_banned_word(text):
+    return any(word in text for word in BANNED_WORDS)
+
+
+class SpamDetector:
+    def __init__(self):
+        pass
+    def is_spam(self, text):
+
+        return random() < 0.5
+
+
+class Bot:
+    def __init__(self, api, chat_id):
+        self.api = api
+        self.chat_id = chat_id
+        self.base_url = f'https://api.telegram.org/bot{API}/'
+        self.spam_detector = SpamDetector()
+
+    def _get_updates(self):
+        url = self.base_url + 'getUpdates'
+        params = {'offset': None, 'timeout': 30}
+        response = requests.get(url, params=params)
+        return response.json()
+
+    def _delete_message(self, message_id):
+        url = self.base_url + 'deleteMessage'
+        params = {'chat_id': self.chat_id, 'message_id': message_id}
+        requests.post(url, params=params)
+
+    def process_messages(self):
+        while True:
+            updates = self._get_updates()
+            for update in updates.get('result', []):
+                message = update.get('message')
+                if message and 'text' in message:
+                    text = message['text'].lower()
+                    if self.spam_detector.is_spam(text) or check_banned_word(text):
+                        self._delete_message(message['message_id'])
+
+
+
+if __name__ == "__main__":
+    bot = Bot(API, CHAT_ID)
+    bot.process_messages()
+
+
+
