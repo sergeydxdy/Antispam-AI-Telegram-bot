@@ -1,5 +1,6 @@
 import requests
 from random import random
+from ai_model import Model
 
 API = '7202336450:AAHDhqjwNGOCLKJ21tJ0L1st3ZgDXldwCx8'
 CHAT_ID = '-1002202582670'
@@ -28,6 +29,7 @@ class Bot:
         self.spam_detector = SpamDetector()
         self.processed_messages = []
         self.last_update_id = None
+        self.model = Model()
 
     def _get_updates(self):
         url = self.base_url + 'getUpdates'
@@ -42,10 +44,10 @@ class Bot:
         params = {'chat_id': self.chat_id, 'message_id': message_id}
         requests.post(url, params=params)
 
-    def _send_message(self, message_id):
+    def _send_message(self, reply_to_message_id):
         url = self.base_url + 'sendMessage'
-        text = 'я тебя сейчас удалю нафиг'
-        params = {'chat_id': self.chat_id, 'text': text, 'reply_to_message_id': message_id}
+        text = 'Ваш комментарий был удалён'
+        params = {'chat_id': self.chat_id, 'text': text, 'reply_to_message_id': reply_to_message_id}
         requests.post(url, params=params)
 
     def process_messages(self):
@@ -55,9 +57,8 @@ class Bot:
                 self.last_update_id = update['update_id']
                 message = update.get('message')
                 if message and 'text' in message and message['message_id'] not in self.processed_messages:
-                    text = message['text'].lower()
-                    if check_banned_word(text):
-                        self._send_message(message['message_id'])
+                    if self.model.predict_spam(text=message['text']):
+                        self._send_message(reply_to_message_id=message['message_id'])
                         self._delete_message(message['message_id'])
                         self.processed_messages.append(message['message_id'])
 
