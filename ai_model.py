@@ -13,4 +13,4 @@ class Model:
             outputs = self.model(**inputs)
             logits = outputs.logits
             predicted_class = torch.argmax(logits, dim=1).item()
-        return True if predicted_class == 1 else False
+        return predicted_class == 1

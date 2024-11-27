@@ -13,27 +13,18 @@ def check_banned_word(text):
     return status
 
 
-class SpamDetector:
-    def __init__(self):
-        pass
-
-    def is_spam(self, text):
-        return random() < 0.5
-
-
 class Bot:
-    def __init__(self, api, chat_id):
+    def __init__(self, api, chat_id, ai_model):
         self.api = api
         self.chat_id = chat_id
         self.base_url = f'https://api.telegram.org/bot{API}/'
-        self.spam_detector = SpamDetector()
         self.processed_messages = []
         self.last_update_id = None
-        self.model = Model()
+        self.model = ai_model
 
     def _get_updates(self):
         url = self.base_url + 'getUpdates'
-        params = {'timeout': 1}
+        params = {'timeout': 30}
         if self.last_update_id:
             params['offset'] = self.last_update_id + 1
         response = requests.get(url, params=params)
@@ -42,13 +33,19 @@ class Bot:
     def _delete_message(self, message_id):
         url = self.base_url + 'deleteMessage'
         params = {'chat_id': self.chat_id, 'message_id': message_id}
-        requests.post(url, params=params)
+        try:
+            requests.post(url, params=params)
+        except Exception as e:
+            print('Error:', e)
 
     def _send_message(self, reply_to_message_id):
         url = self.base_url + 'sendMessage'
         text = 'Ваш комментарий был удалён'
         params = {'chat_id': self.chat_id, 'text': text, 'reply_to_message_id': reply_to_message_id}
-        requests.post(url, params=params)
+        try:
+            requests.post(url, params=params)
+        except Exception as e:
+            print('Error:', e)
 
     def process_messages(self):
         while True:
@@ -58,13 +55,14 @@ class Bot:
                 message = update.get('message')
                 if message and 'text' in message and message['message_id'] not in self.processed_messages:
                     if self.model.predict_spam(text=message['text']):
-                        self._send_message(reply_to_message_id=message['message_id'])
+                        #self._send_message(reply_to_message_id=message['message_id'])
                         self._delete_message(message['message_id'])
                         self.processed_messages.append(message['message_id'])
 
 
 
 if __name__ == "__main__":
-    bot = Bot(API, CHAT_ID)
+    model = Model()
+    bot = Bot(API, CHAT_ID, model)
     bot.process_messages()
 
