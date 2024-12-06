@@ -1,6 +1,7 @@
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 
+
 class Model:
     def __init__(self):
         self.model_path = "H:\\Coding\\spam_deberta_v4"
