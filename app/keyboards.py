@@ -12,14 +12,16 @@ resize_keyboard=True,
 input_field_placeholder='Выберите пункт меню')
 
 info = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Info on YouTube', url='https://www.youtube.com/watch?v=gUdHsp5rs5g'),]
+    [InlineKeyboardButton(text='Info on YouTube', url='https://www.youtube.com/watch?v=gUdHsp5rs5g',)],
+    [InlineKeyboardButton(text='Инфа текстом', callback_data='info_2')]
 ])
+
 
 
 groups = ['Коты в картинках', 'Подслушано центр Э', 'Еще группа']
 
 async def inline_groups():
-    keyboard = ReplyKeyboardBuilder()
+    keyboard = InlineKeyboardBuilder()
     for group in groups:
-        keyboard.add(KeyboardButton(text=group))
+        keyboard.add(InlineKeyboardButton(text=group, callback_data=f"group_{group}"))
     return keyboard.adjust(1).as_markup()
