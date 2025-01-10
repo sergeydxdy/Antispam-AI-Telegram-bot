@@ -7,6 +7,7 @@ from config import TOKEN
 from app.handlers import router
 
 
+
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 

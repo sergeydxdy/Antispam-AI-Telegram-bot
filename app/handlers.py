@@ -3,70 +3,116 @@ import logging
 
 from aiogram import F, Router
 from aiogram.filters import CommandStart, Command
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, ChatMemberUpdated, ContentType
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
+
 
 import app.keyboards as kb
 
 router = Router()
 
-class Register(StatesGroup):
-    channel_name = State()
-    channel_id = State()
 
+class RegisterChannel(StatesGroup):
+    date = State()
+    chat_id = State()
+    chat_title = State()
 
+    user_id = State()
+    user_first_name = State()
+    user_last_name = State()
+    user_username = State()
 
-@router.message(CommandStart())
+    new_member_id = State()
+    left_member_id = State()
+
+@router.message(CommandStart(), F.chat.type == 'private')
 async def command_start_handler(message: Message):
     await message.answer('Привет!', reply_markup=kb.main_keyboard)
 
+@router.message(F.text == 'Инфо')
+async def answer_how_are_you(message: Message):
+    await message.answer(
+        'Выберете группу, информацию о которой хотите получить',
+        reply_markup=await kb.inline_groups())
+
+
 @router.message(Command('info'))
 async def get_help(message: Message):
-    await message.answer('Информация о боте', reply_markup=kb.info)
+    await message.answer('Информация о ваших группах', reply_markup=kb.info)
 
-@router.message(F.text == 'Как дела?')
-async def answer_how_are_you(message: Message):
-    await message.answer('Нормально')
-
-@router.message(F.text == 'Покажи группы')
-async def answer_how_are_you(message: Message):
-    await message.reply('Выши группы:', reply_markup=await kb.inline_groups())
-
-@router.message(F.photo)
-async def send_photo_id(message: Message):
-    await message.answer(f'Photo ID {message.photo[-1].file_id}')
-
-@router.message(Command('get_photo'))
-async def get_photo(message: Message):
-    await message.answer_photo(photo='AgACAgIAAxkBAAMyZ0ng2PiSokh6t6vP4M2y5L8p4N8AAnHlMRuxmlBKXYV4plX-DwcBAAMCAAN5AAM2BA',
-                               caption='Кушаю чипсы, делаю бота')
-@router.message(Command('my_id'))
-async def get_user_id(message: Message):
-    await message.reply(f'Your ID is {message.from_user.id}')
 
 @router.callback_query(F.data == 'info_2')
 async def get_user_id(callback: CallbackQuery):
     await callback.answer()
-    await callback.message.edit_text('Инфо инфо инфо', reply_markup=await kb.inline_groups())
+    await callback.message.edit_text(
+        'Выберете группу, информацию о которой хотите получить',
+        reply_markup=await kb.inline_groups())
 
-@router.message(Command('reg_channel'))
-async def reg_channel(message: Message, state: FSMContext):
-    await state.set_state(Register.channel_name)
-    await message.answer('Введите названия канала')
+@router.message(F.text == 'Добавить чат')
+async def start_reg_channel(message: Message, state: FSMContext):
 
-@router.message(Register.channel_name)
-async def reg_channel_id(message: Message, state: FSMContext):
-    await state.update_data(channel_name=message.text)
-    await state.set_state(Register.channel_id)
-    await message.answer('Введите id канала или ссылку на него')
+    await message.answer(
+        'Добавьте бота к себе в чат через кнопку ниже и дайте ему права администратора',
+        reply_markup=kb.add_button
+    )
 
-@router.message(Register.channel_id)
-async def reg_end(message: Message, state: FSMContext):
-    await state.update_data(channel_name=message.text)
+    await state.set_state(RegisterChannel.chat_id)
+
+
+@router.message(F.content_type.in_([ContentType.NEW_CHAT_MEMBERS]))
+async def user_joined_chat(message: Message, state: FSMContext):
+
+
+    print(message)
+
+    date = message.date
+    chat_id = message.chat.id
+    chat_title = message.chat.title
+
+    user_id = message.from_user.id
+    user_first_name = message.from_user.first_name
+    user_last_name = message.from_user.last_name
+    user_username = message.from_user.username
+
+    new_member_id = message.new_chat_members[0].id
+
+    await state.update_data(
+        date=date,
+        chat_id=chat_id,
+        chat_title=chat_title,
+        user_id=user_id,
+        user_first_name=user_first_name,
+        user_last_name=user_last_name,
+        user_username=user_username,
+        new_member_id=new_member_id
+    )
     data = await state.get_data()
-    await message.answer(f'{data}')
-    await state.clear()
+    await message.answer(f'Бот добавлен пользователем {user_username}.\nДанные: {data}')
 
+    print('Bot add')
+
+
+@router.message(F.content_type.in_([ContentType.LEFT_CHAT_MEMBER]))
+async def user_joined_chat(message: Message):
+    print(message)
+
+    date = message.date
+    chat_id = message.chat.id
+    chat_title = message.chat.title
+
+    user_id = message.from_user.id
+    user_first_name = message.from_user.first_name
+    user_last_name = message.from_user.last_name
+    user_username = message.from_user.username
+
+    left_member_id = message.left_chat_member.id
+
+    print('Bot left')
+
+#@router.message()
+#async def bot_added_to_chat(event: ChatMemberUpdated):
+#    print(event)
+#    print('Hello')
 
 
