@@ -4,7 +4,7 @@ import torch
 
 class Model:
     def __init__(self):
-        self.model_path = "H:\\Coding\\spam_deberta_v4"
+        self.model_path = "models\\spam_deberta_v4"
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
         self.model = AutoModelForSequenceClassification.from_pretrained(self.model_path)
 
