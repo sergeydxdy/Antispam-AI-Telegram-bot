@@ -7,10 +7,12 @@ from aiogram.types import Message, CallbackQuery, ChatMemberUpdated, ContentType
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 
+from database.requests import set_user
 
 import app.keyboards as kb
 
 router = Router()
+
 
 
 class RegisterChannel(StatesGroup):
@@ -63,34 +65,37 @@ async def start_reg_channel(message: Message, state: FSMContext):
 @router.message(F.content_type.in_([ContentType.NEW_CHAT_MEMBERS]))
 async def user_joined_chat(message: Message, state: FSMContext):
 
-
     print(message)
 
     date = message.date
     chat_id = message.chat.id
-    chat_title = message.chat.title
+    title = message.chat.title
 
     user_id = message.from_user.id
-    user_first_name = message.from_user.first_name
-    user_last_name = message.from_user.last_name
-    user_username = message.from_user.username
+    first_name = message.from_user.first_name
+    last_name = message.from_user.last_name
+    username = message.from_user.username
 
     new_member_id = message.new_chat_members[0].id
+
+    action = 'add'
 
     await state.update_data(
         date=date,
         chat_id=chat_id,
-        chat_title=chat_title,
+        title=title,
         user_id=user_id,
-        user_first_name=user_first_name,
-        user_last_name=user_last_name,
-        user_username=user_username,
+        first_name=first_name,
+        last_name=last_name,
+        username=username,
         new_member_id=new_member_id
     )
     data = await state.get_data()
-    await message.answer(f'Бот добавлен пользователем {user_username}.\nДанные: {data}')
 
-    print('Bot add')
+    bot = message.bot
+    await bot.send_message(user_id, f'Бот добавлен пользователем {username}.\nДанные: {data}')
+    await set_user(data)
+    await state.clear()
 
 
 @router.message(F.content_type.in_([ContentType.LEFT_CHAT_MEMBER]))
@@ -108,11 +113,9 @@ async def user_joined_chat(message: Message):
 
     left_member_id = message.left_chat_member.id
 
+    action = 'remove'
+
     print('Bot left')
 
-#@router.message()
-#async def bot_added_to_chat(event: ChatMemberUpdated):
-#    print(event)
-#    print('Hello')
 
 

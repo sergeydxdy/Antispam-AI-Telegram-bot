@@ -1,10 +1,12 @@
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
+import os
 
 
 class Model:
     def __init__(self):
-        self.model_path = "models\\spam_deberta_v4"
+        base_path = os.path.dirname(os.path.abspath(__file__))
+        self.model_path = os.path.join(base_path, "spam_deberta_v4")
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
         self.model = AutoModelForSequenceClassification.from_pretrained(self.model_path)
 

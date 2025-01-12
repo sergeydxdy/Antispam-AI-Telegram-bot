@@ -1,5 +1,5 @@
 import requests
-from ai_model import Model
+from ai_models.ai_model import Model
 
 API = '7202336450:AAHDhqjwNGOCLKJ21tJ0L1st3ZgDXldwCx8'
 BASE_URL = f'https://api.telegram.org/bot{API}/'

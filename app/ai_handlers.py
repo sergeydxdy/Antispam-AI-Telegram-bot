@@ -1,4 +1,4 @@
-from ai_model import Model
+from ai_models.ai_model import Model
 from aiogram.types import Message
 from aiogram import F, Router
 
