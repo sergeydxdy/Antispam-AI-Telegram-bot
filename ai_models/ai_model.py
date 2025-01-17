@@ -10,10 +10,11 @@ class Model:
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
         self.model = AutoModelForSequenceClassification.from_pretrained(self.model_path)
 
-    def predict_spam(self, text):
-        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, max_length=256)
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-            logits = outputs.logits
-            predicted_class = torch.argmax(logits, dim=1).item()
-        return predicted_class == 1
+    def predict_spam(self, text=None):
+        if text:
+            inputs = self.tokenizer(text, return_tensors="pt", truncation=True, max_length=256)
+            with torch.no_grad():
+                outputs = self.model(**inputs)
+                logits = outputs.logits
+                predicted_class = torch.argmax(logits, dim=1).item()
+            return predicted_class == 1

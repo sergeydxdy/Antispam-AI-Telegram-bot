@@ -6,11 +6,15 @@ from aiogram import Bot, Dispatcher
 from config import TOKEN
 from app.handlers import router
 from app.ai_handlers import ai_router
+from aiogram.fsm.storage.memory import MemoryStorage
 
 from database.models import async_main
 
+
+storage = MemoryStorage()
+
 bot = Bot(token=TOKEN)
-dp = Dispatcher()
+dp = Dispatcher(storage=storage)
 
 
 async def main():
