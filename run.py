@@ -1,6 +1,5 @@
 import os
 import asyncio
-import logging
 
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher
@@ -21,8 +20,6 @@ async def main():
 
 
 if __name__ == '__main__':
-    # TODO: delete before production
-    logging.basicConfig(level=logging.INFO)
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
